@@ -18,3 +18,8 @@ variable "environment" {
   type = "string"
   description = "The environment/account name."
 }
+
+variable "platform_domain" {
+  type = "string"
+  description = "The fully qualified platform domain name."
+}
