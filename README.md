@@ -1,3 +1,65 @@
+# tldr;
+
+- This repo contains everything to spin up new production / development / test environments on AWS.
+- The idea here is that production / development / test environments should be almost identical.
+- To spin up a new environment you either create a new `branch` or `fork` of your `master`.
+Then you create a new AWS account, update the configuration files and deploy your new environment.
+- Batteries included and completely serverless*:
+  - Websites for your domain via S3 Bucket, CloudFront Distribution, Route53 DNS, ACM Certificate.
+  - React, Webpack.
+  - React-Native App.
+  - GraphQL Lambda Backend.
+  - Cognito Indentity and User Pools.
+  - ...
+
+# Platform vs. Products
+
+To demonstrate all the complexity around enterprise environments this repo has two logical parts.
+
+## Platform
+The platform contains the public marketing page and can be branded, so that you can resell the complete platform.
+
+## Products
+The products are the actual services within the platform offering and contain the private web and mobile apps.
+
+# Platform Environment Setup
+
+## Domain
+
+Register a domain and make sure to provide valid contact details!
+Set the domain in the `.platform.tfvars file`.
+
+## EMail Provider
+
+Register the domain with an email provider like `zoho.com`.
+
+Get the `CNAME` name and value from the provider to verify the domain ownership.
+Set these in your `.platform.tfvars file`.
+
+## Domain Certificate
+
+Use the AWS Certificate Manager to request a new certificate.
+Include the `domain.com` and `www.domain.com` in the certificate.
+
+This will send a confirmation email for each included domain to your registered domain contact details.
+Confirm both emails and in the AWS Certificate Manager check that the certificate has status `issued`.
+
+Get the ARN of the certificate and set it in you `.platform.tfvars` file.
+
+## Build
+
+...
+
+## Deploy
+
+...
+
+`terraform plan`
+
+`terraform apply`
+
+...
+
 # Production Environments / Accounts
 
 For each `Production Environment` there is a dedicated `AWS Account`.

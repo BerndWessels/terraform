@@ -3,23 +3,36 @@ variable "aws_region" {
   description = "The AWS region."
   default = "us-east-1"
 }
-
 variable "aws_access_key" {
   type = "string"
   description = "The AWS access key."
 }
-
 variable "aws_secret_key" {
   type = "string"
   description = "The AWS secret key"
 }
-
 variable "environment" {
   type = "string"
   description = "The environment/account name."
 }
-
 variable "platform_domain" {
   type = "string"
   description = "The fully qualified platform domain name."
+}
+variable "email_domain_verification_cname_name" {
+  type = "string"
+  description = "The name of the CNAME record used by the email provider to verify the domain ownership."
+}
+variable "email_domain_verification_cname_value" {
+  type = "string"
+  description = "The value of the CNAME record used by the email provider to verify the domain ownership."
+}
+variable "email_mx_record_values" {
+  type = "map"
+  description = "The values of the MX record used to point to the email provider."
+  default = {}
+}
+variable "platform_domain_certificate_arn" {
+  type = "string"
+  description = "The ARN of the ACM certificate to be used for the platform website distribution."
 }
