@@ -1,3 +1,7 @@
+# Status
+Version 0.0.1
+- platform website deployment is working.
+
 # tldr;
 
 - This repo contains everything to spin up new production / development / test environments on AWS.
@@ -20,7 +24,8 @@ To demonstrate all the complexity around enterprise environments this repo has t
 The platform contains the public marketing page and can be branded, so that you can resell the complete platform.
 
 ## Products
-The products are the actual services within the platform offering and contain the private web and mobile apps.
+The products are the actual services within the platform offering and contain the private web and mobile apps the users
+log into.
 
 # Platform Environment Setup
 
