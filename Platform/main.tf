@@ -101,6 +101,7 @@ resource "aws_cloudfront_distribution" "PlatformWebsiteDistribution" {
     minimum_protocol_version = "TLSv1"
     ssl_support_method = "sni-only"
   }
+  retain_on_delete = true
 }
 /**
  * Records routing to the CloudFront distribution of the platform website.
@@ -118,10 +119,97 @@ resource "aws_route53_record" "PlatformWebsiteRecord1" {
 resource "aws_route53_record" "PlatformWebsiteRecord2" {
   zone_id = "${aws_route53_zone.PlatformHostedZone.zone_id}"
   name = "www.${aws_route53_zone.PlatformHostedZone.name}"
-  type = "A"
-  alias {
-    name = "${aws_cloudfront_distribution.PlatformWebsiteDistribution.domain_name}"
-    zone_id = "${aws_cloudfront_distribution.PlatformWebsiteDistribution.hosted_zone_id}"
-    evaluate_target_health = false
-  }
+  type = "CNAME"
+  ttl = "300"
+  records = [
+    "${aws_route53_zone.PlatformHostedZone.name}"]
+}
+/**
+ * IAM Role for the Platform GraphQL Lambda Function.
+ */
+resource "aws_iam_role" "PlatformLambdaGraphQLEndpoint" {
+  name = "lambda_graphql_endpoint"
+  assume_role_policy = "${file("./Lambdas/GraphQLEndpoint/AssumeRolePolicy.json")}"
+}
+/**
+ *
+ */
+resource "aws_iam_role_policy" "PlatformLambdaGraphQLEndpointPolicy" {
+  name = "lambda_graphql_endpoint_policy"
+  role = "${aws_iam_role.PlatformLambdaGraphQLEndpoint.id}"
+  policy = "${file("./Lambdas/GraphQLEndpoint/InlinePolicy.json")}"
+}
+/**
+ * Platform GraphQL Lambda Function.
+ */
+resource "aws_lambda_function" "PlatformLambdaGraphQLFunction" {
+  filename = "./Lambdas/GraphQLEndpoint/index.zip"
+  function_name = "graphql_endpoint"
+  role = "${aws_iam_role.PlatformLambdaGraphQLEndpoint.arn}"
+  handler = "index.handler"
+  runtime = "nodejs4.3"
+  source_code_hash = "${base64sha256(file("./Lambdas/GraphQLEndpoint/index.zip"))}"
+}
+/**
+ *
+ */
+resource "aws_api_gateway_rest_api" "PlatformAPI" {
+  name = "platform_api"
+  description = "Platform API"
+  depends_on = ["aws_lambda_function.PlatformLambdaGraphQLFunction"]
+}
+/**
+ *
+ */
+resource "aws_api_gateway_resource" "PlatformAPIResource" {
+  rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
+  parent_id = "${aws_api_gateway_rest_api.PlatformAPI.root_resource_id}"
+  path_part = "graphql"
+}
+/**
+ *
+ */
+resource "aws_api_gateway_method" "PlatformAPIMethod" {
+  rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
+  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
+  http_method = "POST"
+  authorization = "NONE"
+}
+/**
+ *
+ */
+resource "aws_api_gateway_integration" "PlatformAPIGraphQLIntegration" {
+  rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
+  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
+  http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+  type = "AWS"
+  uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.PlatformLambdaGraphQLFunction.arn}/invocations"
+  integration_http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+}
+/**
+ *
+ */
+resource "aws_api_gateway_integration_response" "PlatformAPIGraphQLIntegrationResponse" {
+  rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
+  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
+  http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+  status_code = "${aws_api_gateway_method_response.200.status_code}"
+}
+/**
+ *
+ */
+resource "aws_api_gateway_method_response" "200" {
+  rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
+  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
+  http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+  status_code = "200"
+}
+/**
+ *
+ */
+resource "aws_api_gateway_deployment" "PlatformAPIDeployment" {
+  depends_on = ["aws_api_gateway_method.PlatformAPIMethod"]
+
+  rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
+  stage_name = "prod"
 }
