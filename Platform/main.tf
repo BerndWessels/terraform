@@ -198,18 +198,94 @@ resource "aws_api_gateway_integration_response" "PlatformAPIGraphQLIntegrationRe
 /**
  *
  */
+resource "aws_api_gateway_model" "PlatformAPIGraphQLMethodResponseModel" {
+  rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
+  name = "ConfigurationFile"
+  description = "A configuration file schema"
+  content_type = "application/json"
+  schema = <<EOF
+{
+  "type": "object"
+}
+EOF
+}
+/**
+ *
+ */
 resource "aws_api_gateway_method_response" "200" {
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
   resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
   http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
   status_code = "200"
+  response_models = {
+    "application/json" = "${aws_api_gateway_model.PlatformAPIGraphQLMethodResponseModel.name}"
+  }
 }
 /**
  *
  */
 resource "aws_api_gateway_deployment" "PlatformAPIDeployment" {
   depends_on = ["aws_api_gateway_method.PlatformAPIMethod"]
-
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
   stage_name = "prod"
+}
+/**
+ *
+*/
+resource "aws_lambda_permission" "PlatformLambdaPermissionGraphQL" {
+  depends_on = ["aws_lambda_function.PlatformLambdaGraphQLFunction"]
+  statement_id = "AllowExecutionFromAPIGateway"
+  action = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.PlatformLambdaGraphQLFunction.function_name}"
+  principal = "apigateway.amazonaws.com"
+}
+/**
+ * ------------- cloudwatch for api gateway
+ */
+resource "aws_api_gateway_account" "PlatformAPIGatewayAccount" {
+  cloudwatch_role_arn = "${aws_iam_role.apigateway_cloudwatch.arn}"
+}
+
+resource "aws_iam_role" "apigateway_cloudwatch" {
+  name = "api_gateway_cloudwatch_global"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "apigateway.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "apigateway_cloudwatch" {
+  name = "default"
+  role = "${aws_iam_role.apigateway_cloudwatch.id}"
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+                "logs:GetLogEvents",
+                "logs:FilterLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
 }
