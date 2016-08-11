@@ -9,21 +9,21 @@ provider "aws" {
 /**
  * Set of nameservers used for the platform domain.
  */
-resource "aws_route53_delegation_set" "PlatformDelegationSet" {
+resource "aws_route53_delegation_set" "Platform" {
   reference_name = "${var.environment}"
 }
 /**
  * Hosted zone used for the platform domain.
  */
-resource "aws_route53_zone" "PlatformHostedZone" {
+resource "aws_route53_zone" "Platform" {
   name = "${var.platform_domain}"
-  delegation_set_id = "${aws_route53_delegation_set.PlatformDelegationSet.id}"
+  delegation_set_id = "${aws_route53_delegation_set.Platform.id}"
 }
 /**
  * CNAME record used by the email provider to verfify the domain ownership.
  */
-resource "aws_route53_record" "PlatformMailVerificationRecord" {
-  zone_id = "${aws_route53_zone.PlatformHostedZone.zone_id}"
+resource "aws_route53_record" "PlatformMailVerification" {
+  zone_id = "${aws_route53_zone.Platform.zone_id}"
   name = "${var.email_domain_verification_cname_name}"
   type = "CNAME"
   ttl = "300"
@@ -33,9 +33,9 @@ resource "aws_route53_record" "PlatformMailVerificationRecord" {
 /**
  * MX record pointing to the email provider.
  */
-resource "aws_route53_record" "PlatformMailMxRecord" {
-  zone_id = "${aws_route53_zone.PlatformHostedZone.zone_id}"
-  name = "${aws_route53_zone.PlatformHostedZone.name}"
+resource "aws_route53_record" "PlatformMail" {
+  zone_id = "${aws_route53_zone.Platform.zone_id}"
+  name = "${aws_route53_zone.Platform.name}"
   type = "MX"
   ttl = "300"
   records = [
@@ -45,7 +45,7 @@ resource "aws_route53_record" "PlatformMailMxRecord" {
 /**
  * S3 bucket hosting the platform website.
  */
-resource "aws_s3_bucket" "PlatformWebsiteBucket" {
+resource "aws_s3_bucket" "PlatformWebsite" {
   bucket = "${var.platform_domain}"
   acl = "public-read"
   policy = "${file("./Websites/Marketing/BucketPolicy.json")}"
@@ -57,7 +57,7 @@ resource "aws_s3_bucket" "PlatformWebsiteBucket" {
 /**
  * CloudFront distribution of the platform website.
  */
-resource "aws_cloudfront_distribution" "PlatformWebsiteDistribution" {
+resource "aws_cloudfront_distribution" "PlatformWebsite" {
   aliases = [
     "${var.platform_domain}",
     "www.${var.platform_domain}"]
@@ -85,7 +85,7 @@ resource "aws_cloudfront_distribution" "PlatformWebsiteDistribution" {
   default_root_object = "index.html"
   enabled = true
   origin {
-    domain_name = "${aws_s3_bucket.PlatformWebsiteBucket.bucket}.s3.amazonaws.com"
+    domain_name = "${aws_s3_bucket.PlatformWebsite.bucket}.s3.amazonaws.com"
     origin_id = "S3-${var.platform_domain}"
     s3_origin_config {
     }
@@ -106,45 +106,45 @@ resource "aws_cloudfront_distribution" "PlatformWebsiteDistribution" {
 /**
  * Records routing to the CloudFront distribution of the platform website.
  */
-resource "aws_route53_record" "PlatformWebsiteRecord1" {
-  zone_id = "${aws_route53_zone.PlatformHostedZone.zone_id}"
-  name = "${aws_route53_zone.PlatformHostedZone.name}"
+resource "aws_route53_record" "PlatformWebsite" {
+  zone_id = "${aws_route53_zone.Platform.zone_id}"
+  name = "${aws_route53_zone.Platform.name}"
   type = "A"
   alias {
-    name = "${aws_cloudfront_distribution.PlatformWebsiteDistribution.domain_name}"
-    zone_id = "${aws_cloudfront_distribution.PlatformWebsiteDistribution.hosted_zone_id}"
+    name = "${aws_cloudfront_distribution.PlatformWebsite.domain_name}"
+    zone_id = "${aws_cloudfront_distribution.PlatformWebsite.hosted_zone_id}"
     evaluate_target_health = false
   }
 }
-resource "aws_route53_record" "PlatformWebsiteRecord2" {
-  zone_id = "${aws_route53_zone.PlatformHostedZone.zone_id}"
-  name = "www.${aws_route53_zone.PlatformHostedZone.name}"
+resource "aws_route53_record" "PlatformWebsiteWWW" {
+  zone_id = "${aws_route53_zone.Platform.zone_id}"
+  name = "www.${aws_route53_zone.Platform.name}"
   type = "CNAME"
   ttl = "300"
   records = [
-    "${aws_route53_zone.PlatformHostedZone.name}"]
+    "${aws_route53_zone.Platform.name}"]
 }
 /**
  * IAM Role for the Platform GraphQL Lambda Function.
  */
 resource "aws_iam_role" "PlatformLambdaGraphQLEndpoint" {
-  name = "lambda_graphql_endpoint"
+  name = "platform_lambda_graphql_endpoint"
   assume_role_policy = "${file("./Lambdas/GraphQLEndpoint/AssumeRolePolicy.json")}"
 }
 /**
- *
+ * IAM Role Policy for the Platform GraphQL Lambda Function.
  */
-resource "aws_iam_role_policy" "PlatformLambdaGraphQLEndpointPolicy" {
-  name = "lambda_graphql_endpoint_policy"
+resource "aws_iam_role_policy" "PlatformLambdaGraphQLEndpoint" {
+  name = "platform_lambda_graphql_endpoint"
   role = "${aws_iam_role.PlatformLambdaGraphQLEndpoint.id}"
   policy = "${file("./Lambdas/GraphQLEndpoint/InlinePolicy.json")}"
 }
 /**
  * Platform GraphQL Lambda Function.
  */
-resource "aws_lambda_function" "PlatformLambdaGraphQLFunction" {
+resource "aws_lambda_function" "PlatformGraphQL" {
   filename = "./Lambdas/GraphQLEndpoint/index.zip"
-  function_name = "graphql_endpoint"
+  function_name = "platform_graphql_endpoint"
   role = "${aws_iam_role.PlatformLambdaGraphQLEndpoint.arn}"
   handler = "index.handler"
   runtime = "nodejs4.3"
@@ -156,12 +156,12 @@ resource "aws_lambda_function" "PlatformLambdaGraphQLFunction" {
 resource "aws_api_gateway_rest_api" "PlatformAPI" {
   name = "platform_api"
   description = "Platform API"
-  depends_on = ["aws_lambda_function.PlatformLambdaGraphQLFunction"]
+  depends_on = ["aws_lambda_function.PlatformGraphQL"]
 }
 /**
  *
  */
-resource "aws_api_gateway_resource" "PlatformAPIResource" {
+resource "aws_api_gateway_resource" "PlatformGraphQL" {
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
   parent_id = "${aws_api_gateway_rest_api.PlatformAPI.root_resource_id}"
   path_part = "graphql"
@@ -169,43 +169,42 @@ resource "aws_api_gateway_resource" "PlatformAPIResource" {
 /**
  *
  */
-resource "aws_api_gateway_method" "PlatformAPIMethod" {
+resource "aws_api_gateway_method" "PlatformGraphQL" {
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
-  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
+  resource_id = "${aws_api_gateway_resource.PlatformGraphQL.id}"
   http_method = "POST"
   authorization = "NONE"
 }
 /**
  *
  */
-resource "aws_api_gateway_integration" "PlatformAPIGraphQLIntegration" {
+resource "aws_api_gateway_integration" "PlatformGraphQL" {
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
-  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
-  http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+  resource_id = "${aws_api_gateway_resource.PlatformGraphQL.id}"
+  http_method = "${aws_api_gateway_method.PlatformGraphQL.http_method}"
   type = "AWS"
-  uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.PlatformLambdaGraphQLFunction.arn}/invocations"
-  integration_http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+  uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.PlatformGraphQL.arn}/invocations"
+  integration_http_method = "${aws_api_gateway_method.PlatformGraphQL.http_method}"
 }
 /**
  *
  */
-resource "aws_api_gateway_integration_response" "PlatformAPIGraphQLIntegrationResponse" {
+resource "aws_api_gateway_integration_response" "PlatformGraphQL" {
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
-  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
-  http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+  resource_id = "${aws_api_gateway_resource.PlatformGraphQL.id}"
+  http_method = "${aws_api_gateway_method.PlatformGraphQL.http_method}"
   status_code = "${aws_api_gateway_method_response.200.status_code}"
 }
 /**
  *
  */
-resource "aws_api_gateway_model" "PlatformAPIGraphQLMethodResponseModel" {
+resource "aws_api_gateway_model" "PlatformGraphQL" {
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
   name = "ConfigurationFile"
   description = "A configuration file schema"
   content_type = "application/json"
   schema = <<EOF
 {
-  "type": "object"
 }
 EOF
 }
@@ -214,40 +213,40 @@ EOF
  */
 resource "aws_api_gateway_method_response" "200" {
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
-  resource_id = "${aws_api_gateway_resource.PlatformAPIResource.id}"
-  http_method = "${aws_api_gateway_method.PlatformAPIMethod.http_method}"
+  resource_id = "${aws_api_gateway_resource.PlatformGraphQL.id}"
+  http_method = "${aws_api_gateway_method.PlatformGraphQL.http_method}"
   status_code = "200"
   response_models = {
-    "application/json" = "${aws_api_gateway_model.PlatformAPIGraphQLMethodResponseModel.name}"
+    "application/json" = "${aws_api_gateway_model.PlatformGraphQL.name}"
   }
 }
 /**
  *
  */
-resource "aws_api_gateway_deployment" "PlatformAPIDeployment" {
-  depends_on = ["aws_api_gateway_method.PlatformAPIMethod"]
+resource "aws_api_gateway_deployment" "PlatformGraphQL" {
+  depends_on = ["aws_api_gateway_method.PlatformGraphQL"]
   rest_api_id = "${aws_api_gateway_rest_api.PlatformAPI.id}"
   stage_name = "prod"
 }
 /**
  *
 */
-resource "aws_lambda_permission" "PlatformLambdaPermissionGraphQL" {
-  depends_on = ["aws_lambda_function.PlatformLambdaGraphQLFunction"]
+resource "aws_lambda_permission" "PlatformGraphQL" {
+  depends_on = ["aws_lambda_function.PlatformGraphQL"]
   statement_id = "AllowExecutionFromAPIGateway"
   action = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.PlatformLambdaGraphQLFunction.function_name}"
+  function_name = "${aws_lambda_function.PlatformGraphQL.function_name}"
   principal = "apigateway.amazonaws.com"
 }
 /**
  * ------------- cloudwatch for api gateway
  */
-resource "aws_api_gateway_account" "PlatformAPIGatewayAccount" {
-  cloudwatch_role_arn = "${aws_iam_role.apigateway_cloudwatch.arn}"
+resource "aws_api_gateway_account" "Platform" {
+  cloudwatch_role_arn = "${aws_iam_role.PlatformAPIGatewayAccount.arn}"
 }
 
-resource "aws_iam_role" "apigateway_cloudwatch" {
-  name = "api_gateway_cloudwatch_global"
+resource "aws_iam_role" "PlatformAPIGatewayAccount" {
+  name = "platform_api_gateway_account"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -265,9 +264,9 @@ resource "aws_iam_role" "apigateway_cloudwatch" {
 EOF
 }
 
-resource "aws_iam_role_policy" "apigateway_cloudwatch" {
-  name = "default"
-  role = "${aws_iam_role.apigateway_cloudwatch.id}"
+resource "aws_iam_role_policy" "PlatformAPIGatewayAccount" {
+  name = "platform_api_gateway_account"
+  role = "${aws_iam_role.PlatformAPIGatewayAccount.id}"
   policy = <<EOF
 {
     "Version": "2012-10-17",

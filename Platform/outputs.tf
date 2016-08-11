@@ -1,9 +1,9 @@
 output "PlatformDelegationSetId" {
-  value = "${aws_route53_delegation_set.PlatformDelegationSet.id}"
+  value = "${aws_route53_delegation_set.Platform.id}"
 }
 output "PlatformHostedZoneId" {
-  value = "${aws_route53_zone.PlatformHostedZone.id}"
+  value = "${aws_route53_zone.Platform.id}"
 }
-output "PlatformWebsiteBucketId" {
-  value = "${aws_s3_bucket.PlatformWebsiteBucket.id}"
+output "PlatformWebsiteId" {
+  value = "${aws_s3_bucket.PlatformWebsite.id}"
 }
