@@ -115,6 +115,7 @@ resource "aws_cloudfront_distribution" "PlatformWebsite" {
     domain_name = "${aws_s3_bucket.PlatformWebsite.bucket}.s3.amazonaws.com"
     origin_id = "S3-${var.platform_domain}"
     s3_origin_config {
+      origin_access_identity = "${aws_cloudfront_origin_access_identity.PlatformWebsite.cloudfront_access_identity_path}"
     }
   }
   price_class = "PriceClass_All"
@@ -129,6 +130,13 @@ resource "aws_cloudfront_distribution" "PlatformWebsite" {
     ssl_support_method = "sni-only"
   }
   retain_on_delete = true
+}
+
+/**
+ * Origin Identity to workaround https://github.com/hashicorp/terraform/issues/7930
+ */
+resource "aws_cloudfront_origin_access_identity" "PlatformWebsite" {
+  comment = "Managed by Terraform"
 }
 
 /**
@@ -197,12 +205,12 @@ resource "aws_iam_role_policy" "PlatformLambdaGraphQLEndpoint" {
  * GraphQL Lambda Function.
  */
 resource "aws_lambda_function" "PlatformGraphQL" {
-  filename = "./Lambdas/GraphQLEndpoint/index.zip"
+  filename = "./Lambdas/GraphQLEndpoint/.GraphQLEndpoint.compiled.zip"
   function_name = "platform_graphql_endpoint"
   role = "${aws_iam_role.PlatformLambdaGraphQLEndpoint.arn}"
   handler = "index.handler"
   runtime = "nodejs4.3"
-  source_code_hash = "${base64sha256(file("./Lambdas/GraphQLEndpoint/index.zip"))}"
+  source_code_hash = "${base64sha256(file("./Lambdas/GraphQLEndpoint/.GraphQLEndpoint.compiled.zip"))}"
 }
 
 /**
