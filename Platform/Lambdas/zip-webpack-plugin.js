@@ -8,7 +8,7 @@
  */
 
 var path = require('path');
-var async = require("async");
+var async = require('async');
 var url = require('url');
 var JSZip = require('jszip');
 
