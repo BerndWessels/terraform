@@ -1,6 +1,7 @@
 # Status
-Version 0.0.1
+Version 0.1.0
 - platform website deployment is working.
+- platform lambda GraphQL endpoint deployment is working.
 
 # tldr;
 
@@ -15,6 +16,46 @@ Then you create a new AWS account, update the configuration files and deploy you
   - GraphQL Lambda Backend.
   - Cognito Indentity and User Pools.
   - ...
+
+# Getting Started
+
+- Create a new `AWS Account` for your new `Environment`.
+- Create a new `IAM User` called `terraform` with `AdministratorAccess` permissions
+and save the `access key` and `secret key` somewhere safe.
+- In the `platform` folder create a file called `.aws.tfvars` and put the `access key` and `secret key` there.
+
+
+    aws_access_key = "XXXXXXXXXXXXXXXXXXXX"
+    aws_secret_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+- In the `platform` folder create a file called `.platform.tfvars` and update it to match your new `environment`.
+
+
+    aws_region = "us-east-1"
+    environment = "BaaSPlatform"
+    platform_domain = "baas.com"
+    email_domain_verification_cname_name = "xxxxxxxxxx"
+    email_domain_verification_cname_value = "zmverify.zoho.com"
+    email_mx_record_values.1 = "10 mx.zoho.com"
+    email_mx_record_values.2 = "20 mx2.zoho.com"
+    platform_domain_certificate_arn = "arn:aws:acm:xxxxxxxxx:xxxxxxxxxxxx:certificate/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+- You might have to adjust `.platform.tfvars` and `main.tf` to match you particular requirements.
+  - Maybe your `email provider` requires a different `domain verification method`.
+  - Maybe you bring your own `SSL Domain Certificate` rather than using `AWS ACM Certificates`.
+- In this example we are going for the `cheapest` possible solutions.
+  - `Zoho Mail` offers a `free mail account` for your own domain.
+  - `AWS` gives you a `free SSL Domain Certificate` via the `Certificate Mananger`.
+- After everything has been setup you can now prepare the `lambdas` and `websites` for your `environment`.
+  - Run `npm run platform:install` to load all dependencies.
+- To make sure everything is setup correctly you can `plan` you `deployment`. 
+  - Run `npm run platform:plan` to make sure everything is ready to be deployed.
+- Now you are ready to `deploy` your `environment`.
+  - Run `npm run platform:deploy` to actually deploy all `resources` of your `environment`.
+
+Congratulations, your new `environment` should be up and running in the `cloud` now.
+
+Now you can make changes to `lambdas` or the `websites` and simply deploy them with `npm run platform:deploy`.
 
 # Platform vs. Products
 
