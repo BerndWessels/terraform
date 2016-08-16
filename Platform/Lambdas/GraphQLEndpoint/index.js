@@ -7,16 +7,29 @@
  * LICENSE.txt file in the root directory of this source tree.
  */
 
-'use strict';
+import {graphql} from 'graphql';
+import Schema from './schema';
+
 console.log('Loading function');
 
-exports.handler = (event, context, callback) => {
-    //console.log('Received event:', JSON.stringify(event, null, 2));
-    console.log('value1 =', event.key1);
-    console.log('value2 =', event.key2);
-    console.log('value3 =', event.key3);
-    var result = {something: event.key1};
-    console.log(JSON.stringify(result, null, 2));
-    callback(null, result);  // Echo back the first key value
-    // callback('Something went wrong');
+/**
+ * Lambda entry point.
+ */
+exports.handler = (event, context) => {
+    executeQuery(event, (error, response) => {
+        return context.done(error, response);
+    });
 };
+
+/**
+ * Execute the GraphQL query.
+ */
+function executeQuery(event, callback) {
+    // Get the GraphQL query from the request.
+    let query = event.query;
+    // Process the GraphQL query
+    graphql(Schema, query).then(result => {
+        //console.log('RESULT: ', result);
+        return callback(null, result);
+    });
+}

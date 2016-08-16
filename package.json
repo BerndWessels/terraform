@@ -6,10 +6,10 @@
   "scripts": {
     "platform:lambdas:build": "webpack --config Platform/Lambdas/webpack.config.babel.js -p --progress --colors",
     "platform:plan": "cd Platform && terraform plan -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
-    "platform:deploy": "cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
+    "platform:deploy": "npm run platform:lambdas:build && cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
     "product:lambdas:build": "webpack --config Product/Lambdas/webpack.config.babel.js -p --progress --colors",
     "product:plan": "cd Platform && terraform plan -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
-    "product:deploy": "cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
+    "product:deploy": "npm run product:lambdas:build && cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,6 +28,7 @@
     "babel-preset-es2015": "^6.0.0",
     "babel-preset-stage-0": "^6.0.0",
     "clean-webpack-plugin": "^0.1.0",
+    "graphql": "^0.6.0",
     "json-loader": "^0.5.0",
     "jszip": "^3.0.0",
     "webpack": "^1.0.0",
