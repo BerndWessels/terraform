@@ -25,20 +25,22 @@ and save the `access key` and `secret key` somewhere safe.
 - In the `platform` folder create a file called `.aws.tfvars` and put the `access key` and `secret key` there.
 
 
-    aws_access_key = "XXXXXXXXXXXXXXXXXXXX"
-    aws_secret_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        aws_access_key = "XXXXXXXXXXXXXXXXXXXX"
+        aws_secret_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
 
 - In the `platform` folder create a file called `.platform.tfvars` and update it to match your new `environment`.
 
 
-    aws_region = "us-east-1"
-    environment = "BaaSPlatform"
-    platform_domain = "baas.com"
-    email_domain_verification_cname_name = "xxxxxxxxxx"
-    email_domain_verification_cname_value = "zmverify.zoho.com"
-    email_mx_record_values.1 = "10 mx.zoho.com"
-    email_mx_record_values.2 = "20 mx2.zoho.com"
-    platform_domain_certificate_arn = "arn:aws:acm:xxxxxxxxx:xxxxxxxxxxxx:certificate/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        aws_region = "us-east-1"
+        environment = "BaaSPlatform"
+        platform_domain = "baas.com"
+        email_domain_verification_cname_name = "xxxxxxxxxx"
+        email_domain_verification_cname_value = "zmverify.zoho.com"
+        email_mx_record_values.1 = "10 mx.zoho.com"
+        email_mx_record_values.2 = "20 mx2.zoho.com"
+        platform_domain_certificate_arn = "arn:aws:acm:xxxxxxxxx:xxxxxxxxxxxx:certificate/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
 
 - You might have to adjust `.platform.tfvars` and `main.tf` to match you particular requirements.
   - Maybe your `email provider` requires a different `domain verification method`.
