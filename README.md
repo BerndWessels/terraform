@@ -22,7 +22,7 @@ Then you create a new AWS account, update the configuration files and deploy you
 - Create a new `AWS Account` for your new `Environment`.
 - Create a new `IAM User` called `terraform` with `AdministratorAccess` permissions
 and save the `access key` and `secret key` somewhere safe.
-- Create an `aws-cli` account called `platform-terraform` in your local `~/.aws/credentials` file with those credentials.
+- Create an `aws-cli` profile called `platform-terraform` in your local `~/.aws/credentials` file with those credentials.
 - In the `platform` folder create a file called `.aws.tfvars` and put the `access key` and `secret key` there.
 
 
