@@ -95,20 +95,6 @@ Confirm both emails and in the AWS Certificate Manager check that the certificat
 
 Get the ARN of the certificate and set it in you `.platform.tfvars` file.
 
-## Build
-
-...
-
-## Deploy
-
-...
-
-`terraform plan`
-
-`terraform apply`
-
-...
-
 # Production Environments / Accounts
 
 For each `Production Environment` there is a dedicated `AWS Account`.
