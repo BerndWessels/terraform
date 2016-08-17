@@ -11,8 +11,7 @@ var path = require('path');
 var async = require('async');
 var url = require('url');
 var JSZip = require('jszip');
-
-var RawSource = require("webpack-sources/lib/RawSource");
+var RawSource = require('webpack-sources/lib/RawSource');
 
 function CompressionPlugin(options) {
     options = options || {};

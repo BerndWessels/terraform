@@ -10,7 +10,7 @@
     "platform:build:website": "cd Platform/Websites/Marketing && npm run build",
     "platform:plan": "cd Platform && terraform plan -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
     "platform:deploy": "npm run platform:build:lambdas && cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\" && cd .. && npm run platform:deploy:website",
-    "platform:deploy:website": "npm run platform:build:website && cd Platform/Websites/Marketing/dist && aws s3 sync . s3://wessels.nz --profile=wessels-admin",
+    "platform:deploy:website": "npm run platform:build:website && cd Platform/Websites/Marketing/dist && aws s3 sync . s3://wessels.nz --profile=platform-terraform",
     "product:lambdas:build": "webpack --config Product/Lambdas/webpack.config.babel.js -p --progress --colors",
     "product:plan": "cd Platform && terraform plan -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
     "product:deploy": "npm run product:lambdas:build && cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
@@ -36,6 +36,7 @@
     "json-loader": "^0.5.0",
     "jszip": "^3.0.0",
     "webpack": "^1.0.0",
+    "webpack-sources": "^0.1.0",
     "yargs": "^4.0.0"
   }
 }
