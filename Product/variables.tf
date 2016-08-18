@@ -24,9 +24,9 @@ variable "environment" {
   type = "string"
   description = "The environment/account name."
 }
-variable "platform_domain" {
+variable "product_domain" {
   type = "string"
-  description = "The fully qualified platform domain name."
+  description = "The fully qualified product domain name."
 }
 variable "email_domain_verification_cname_name" {
   type = "string"
@@ -41,16 +41,7 @@ variable "email_mx_record_values" {
   description = "The values of the MX record used to point to the email provider."
   default = {}
 }
-variable "platform_domain_certificate_arn" {
+variable "product_domain_certificate_arn" {
   type = "string"
-  description = "The ARN of the ACM certificate to be used for the platform website distribution."
-}
-variable "product_domain" {
-  type = "string"
-  description = "The fully qualified product domain name."
-}
-variable "product_subdomain_ns_record_values" {
-  type = "map"
-  description = "The values of the NS record pointing to the product nameservers."
-  default = {}
+  description = "The ARN of the ACM certificate to be used for the product website distribution."
 }

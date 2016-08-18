@@ -264,7 +264,7 @@ if (!buildTest) {
       inject: false,
       baseurl: process.env.BASEURL || '/',
       favicon: './public/favicon.ico',
-      title: 'Platform - Wessels'
+      title: 'Product - Wessels'
     })
   );
 }

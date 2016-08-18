@@ -19,6 +19,8 @@ Then you create a new AWS account, update the configuration files and deploy you
 
 # Getting Started
 
+## Platform Environment
+
 - Create a new `AWS Account` for your new `Environment`.
 - Create a new `IAM User` called `terraform` with `AdministratorAccess` permissions
 and save the `access key` and `secret key` somewhere safe.
@@ -42,6 +44,12 @@ and save the `access key` and `secret key` somewhere safe.
         email_mx_record_values.2 = "20 mx2.zoho.com"
         platform_domain_certificate_arn = "arn:aws:acm:xxxxxxxxx:xxxxxxxxxxxx:certificate/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
+        product_domain = "visa.baas.com"
+        product_subdomain_ns_record_values.1 = "ns-1111.awsdns-11.com"
+        product_subdomain_ns_record_values.2 = "ns-2222.awsdns-22.org"
+        product_subdomain_ns_record_values.3 = "ns-3333.awsdns-33.co.uk"
+        product_subdomain_ns_record_values.4 = "ns-4444.awsdns-44.net"
+
 
 - You might have to adjust `.platform.tfvars` and `main.tf` to match you particular requirements.
   - Maybe your `email provider` requires a different `domain verification method`.
@@ -59,6 +67,16 @@ and save the `access key` and `secret key` somewhere safe.
 Congratulations, your new `environment` should be up and running in the `cloud` now.
 
 Now you can make changes to `lambdas` or the `websites` and simply deploy them with `npm run platform:deploy`.
+
+## Product Environments
+
+Basically you do exactly the same again for each of your product environments.
+
+Every product environment will also get its own AWS account.
+
+Obviously the product environments will be more or less different but the build and deployment processes are pretty much the same.
+
+Just have a look in the `Product` folder and the `package.json` for an example.
 
 # Platform vs. Products
 

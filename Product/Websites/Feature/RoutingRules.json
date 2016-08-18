@@ -1,0 +1,9 @@
+[{
+  "Condition": {
+    "HttpErrorCodeReturnedEquals": "404"
+  },
+  "Redirect": {
+    "HostName": "www.wessels.nz",
+    "ReplaceKeyWith": "index.html"
+  }
+}]

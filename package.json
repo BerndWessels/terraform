@@ -12,10 +12,14 @@
     "platform:deploy": "npm run platform:build:lambdas && cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\" && cd .. && npm run platform:deploy:website",
     "platform:deploy:lambdas": "npm run platform:build:lambdas && cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
     "platform:deploy:website": "npm run platform:build:website && cd Platform/Websites/Marketing/dist && aws s3 sync . s3://wessels.nz --profile=platform-terraform",
-    "product:lambdas:build": "webpack --config Product/Lambdas/webpack.config.babel.js -p --progress --colors",
-    "product:plan": "cd Platform && terraform plan -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
-    "product:deploy": "npm run product:lambdas:build && cd Platform && terraform apply -var-file=\".aws.tfvars\" -var-file=\".platform.tfvars\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "product:install": "npm run product:install:website && npm install",
+    "product:install:website": "cd Product/Websites/Feature && npm install",
+    "product:build:lambdas": "webpack --config Product/Lambdas/webpack.config.babel.js -p --progress --colors",
+    "product:build:website": "cd Product/Websites/Feature && npm run build",
+    "product:plan": "cd Product && terraform plan -var-file=\".aws.tfvars\" -var-file=\".product.tfvars\"",
+    "product:deploy": "npm run product:build:lambdas && cd Product && terraform apply -var-file=\".aws.tfvars\" -var-file=\".product.tfvars\" && cd .. && npm run product:deploy:website",
+    "product:deploy:lambdas": "npm run product:build:lambdas && cd Product && terraform apply -var-file=\".aws.tfvars\" -var-file=\".product.tfvars\"",
+    "product:deploy:website": "npm run product:build:website && cd Product/Websites/Feature/dist && aws s3 sync . s3://product.wessels.nz --profile=product-terraform"
   },
   "repository": {
     "type": "git",

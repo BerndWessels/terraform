@@ -86,6 +86,22 @@ resource "aws_route53_record" "PlatformWebsiteWWW" {
 }
 
 /**
+ * NS Records for Product Domains.
+ * ----------------------------------------------------------
+ */
+resource "aws_route53_record" "ProductSubdomain" {
+  zone_id = "${aws_route53_zone.Platform.zone_id}"
+  name = "${var.product_domain}"
+  type = "NS"
+  ttl = "300"
+  records = [
+    "${var.product_subdomain_ns_record_values.1}",
+    "${var.product_subdomain_ns_record_values.2}",
+    "${var.product_subdomain_ns_record_values.3}",
+    "${var.product_subdomain_ns_record_values.4}"]
+}
+
+/**
  * CloudFront
  * -------------------------------------------------------------------------------------------------------------------
  */

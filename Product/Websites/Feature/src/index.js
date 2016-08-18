@@ -102,7 +102,7 @@ class Index extends React.Component {
   render() {
     return (
       <div>
-        <h1>Wessels Platform</h1>
+        <h1>Wessels Product</h1>
         <span>See, there is an icon:</span>
         <span className="icon-calendar"></span>
       </div>

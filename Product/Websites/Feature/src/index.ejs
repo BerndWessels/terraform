@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui, shrink-to-fit=no"/>
+  <base href="<%= htmlWebpackPlugin.options.baseurl %>">
+  <title><%= htmlWebpackPlugin.options.title %></title>
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+  <!-- Provide default sizes specified for iOS7, other devices will scale as appropriate -->
+  <!-- Order is important and ensures it gracefully degrades along with compatibility of the device -->
+  <!-- The missing ‘sizes’ attribute in the last touch-icon ‘rel’ tag, ensures compatibility with older iPhones -->
+  <link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png"/>
+  <link rel="apple-touch-icon" sizes="120x120" href="icon-120x120.png"/>
+  <link rel="apple-touch-icon" sizes="76x76" href="icon-76x76.png"/>
+  <link rel="apple-touch-icon" href="icon-60x60.png"/>
+  <% if (htmlWebpackPlugin.files.favicon) { %>
+  <link rel="shortcut icon" href="<%= htmlWebpackPlugin.files.favicon %>">
+  <% } %>
+  <!-- Application Styles -->
+  <% for (var css in htmlWebpackPlugin.files.css) { %>
+  <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
+  <% } %>
+  <!-- Polyfills for old IEs, see https://github.com/andyearnshaw/Intl.js TODO Safari? -->
+  <!--[if gte IE 9]>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Intl.~locale.en"></script>
+  <![endif]-->
+</head>
+<body>
+<div id="index"></div>
+<!-- External Scripts -->
+<!-- import:start -->
+<!-- import:end -->
+<!-- Application Scripts -->
+<% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+<script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
+<% } %>
+</body>
+</html>
