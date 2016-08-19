@@ -79,10 +79,12 @@ resource "aws_route53_record" "PlatformWebsite" {
 resource "aws_route53_record" "PlatformWebsiteWWW" {
   zone_id = "${aws_route53_zone.Platform.zone_id}"
   name = "www.${aws_route53_zone.Platform.name}"
-  type = "CNAME"
-  ttl = "300"
-  records = [
-    "${aws_route53_zone.Platform.name}"]
+  type = "A"
+  alias {
+    name = "${aws_s3_bucket.PlatformWebsiteWWW.website_domain}"
+    zone_id = "${aws_s3_bucket.PlatformWebsiteWWW.hosted_zone_id}"
+    evaluate_target_health = false
+  }
 }
 
 /**
@@ -179,6 +181,17 @@ resource "aws_s3_bucket" "PlatformWebsite" {
   website {
     index_document = "index.html"
     routing_rules = "${file("./Websites/Marketing/RoutingRules.json")}"
+  }
+}
+
+/**
+ * S3 bucket hosting the platform www redirect.
+ */
+resource "aws_s3_bucket" "PlatformWebsiteWWW" {
+  bucket = "www.${var.platform_domain}"
+  acl = "public-read"
+  website {
+    redirect_all_requests_to = "wessels.nz"
   }
 }
 
