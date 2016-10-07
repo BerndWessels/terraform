@@ -54,3 +54,16 @@ variable "product_subdomain_ns_record_values" {
   description = "The values of the NS record pointing to the product nameservers."
   default = {}
 }
+variable "seo_domain" {
+  type = "string"
+  description = "The fully qualified seo domain name."
+}
+variable "seo_resources_domain" {
+  type = "string"
+  description = "The fully qualified seo resources domain name."
+}
+variable "seo_subdomain_ns_record_values" {
+  type = "map"
+  description = "The values of the NS record pointing to the seo nameservers."
+  default = {}
+}

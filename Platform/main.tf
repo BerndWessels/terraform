@@ -104,6 +104,33 @@ resource "aws_route53_record" "ProductSubdomain" {
 }
 
 /**
+ * NS Records for SEO Domains.
+ * ----------------------------------------------------------
+ */
+resource "aws_route53_record" "SeoSubdomain" {
+  zone_id = "${aws_route53_zone.Platform.zone_id}"
+  name = "${var.seo_domain}"
+  type = "NS"
+  ttl = "300"
+  records = [
+    "${var.seo_subdomain_ns_record_values.1}",
+    "${var.seo_subdomain_ns_record_values.2}",
+    "${var.seo_subdomain_ns_record_values.3}",
+    "${var.seo_subdomain_ns_record_values.4}"]
+}
+resource "aws_route53_record" "SeoResourcesSubdomain" {
+  zone_id = "${aws_route53_zone.Platform.zone_id}"
+  name = "${var.seo_resources_domain}"
+  type = "NS"
+  ttl = "300"
+  records = [
+    "${var.seo_subdomain_ns_record_values.1}",
+    "${var.seo_subdomain_ns_record_values.2}",
+    "${var.seo_subdomain_ns_record_values.3}",
+    "${var.seo_subdomain_ns_record_values.4}"]
+}
+
+/**
  * CloudFront
  * -------------------------------------------------------------------------------------------------------------------
  */
