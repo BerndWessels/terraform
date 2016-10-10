@@ -24,11 +24,15 @@ variable "environment" {
   type = "string"
   description = "The environment/account name."
 }
-variable "seo_resources_domain_certificate_arn" {
+variable "seo_domain" {
   type = "string"
-  description = "The ARN of the ACM certificate to be used for the seo resources website distribution."
+  description = "The fully qualified seo domain name."
 }
 variable "seo_resources_domain" {
   type = "string"
   description = "The fully qualified seo resources domain name."
+}
+variable "seo_resources_domain_certificate_arn" {
+  type = "string"
+  description = "The ARN of the ACM certificate to be used for the seo resources website distribution."
 }

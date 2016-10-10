@@ -18,6 +18,12 @@ provider "aws" {
 }
 
 /**
+ * Helper to get the current Account ID via ${data.aws_caller_identity.current.account_id}
+ */
+data "aws_caller_identity" "current" {
+}
+
+/**
  * Route53
  * -------------------------------------------------------------------------------------------------------------------
  */
@@ -33,16 +39,30 @@ resource "aws_route53_delegation_set" "Seo" {
  * Hosted zone used for the Seo domain.
  */
 resource "aws_route53_zone" "Seo" {
-  name = "${var.seo_resources_domain}"
+  name = "${var.seo_domain}"
   delegation_set_id = "${aws_route53_delegation_set.Seo.id}"
 }
 
+///**
+// * Record routing to the APIGateway's CloudFront distribution for the Seo website.
+// */
+//resource "aws_route53_record" "SeoWebsite" {
+//  zone_id = "${aws_route53_zone.Seo.zone_id}"
+//  name = "${var.seo_domain}"
+//  type = "A"
+//  alias {
+//    name = "${aws_api_gateway_domain_name.SeoWebsite.cloudfront_domain_name}"
+//    zone_id = "${aws_api_gateway_domain_name.SeoWebsite.cloudfront_zone_id}"
+//    evaluate_target_health = false
+//  }
+//}
+
 /**
- * Records routing to the CloudFront distribution of the Seo website.
+ * Record routing to the CloudFront distribution of the Seo resources website.
  */
 resource "aws_route53_record" "SeoResourcesWebsite" {
   zone_id = "${aws_route53_zone.Seo.zone_id}"
-  name = "${aws_route53_zone.Seo.name}"
+  name = "${var.seo_resources_domain}"
   type = "A"
   alias {
     name = "${aws_cloudfront_distribution.SeoResourcesWebsite.domain_name}"
@@ -132,11 +152,11 @@ resource "aws_s3_bucket" "SeoResourcesWebsite" {
   }
 }
 
-///**
-// * IAM
-// * -------------------------------------------------------------------------------------------------------------------
-// */
-//
+/**
+ * IAM
+ * -------------------------------------------------------------------------------------------------------------------
+ */
+
 /**
  * IAM Role to enable APIGateway logging to CloudWatch.
  */
@@ -191,29 +211,16 @@ resource "aws_lambda_function" "SeoWebsite" {
 /**
  * Allow APIGateway to access the Website Lambda Function.
  */
-resource "aws_lambda_permission" "SeoWebsiteApiGateway" {
-  depends_on = [
-    "aws_lambda_function.SeoWebsite",
-    "aws_api_gateway_rest_api.SeoWebsite",
-    "aws_api_gateway_method.SeoWebsite"
-  ]
-  statement_id = "AllowExecutionFromAPIGateway"
-  action = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.SeoWebsite.function_name}"
-  principal = "apigateway.amazonaws.com"
-}
-
 resource "aws_lambda_permission" "SeoWebsiteApiGatewayMethod" {
   depends_on = [
-    "aws_lambda_function.SeoWebsite",
-    "aws_api_gateway_rest_api.SeoWebsite",
-    "aws_api_gateway_method.SeoWebsite"
+    "aws_api_gateway_method.SeoWebsite",
+    "aws_api_gateway_method_response.SeoWebsite"
   ]
   statement_id = "AllowExecutionFromAPIGatewayMethod"
   action = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.SeoWebsite.function_name}"
   principal = "apigateway.amazonaws.com"
-  source_arn = "arn:aws:execute-api:${var.aws_region}:913793700308:${aws_api_gateway_rest_api.SeoWebsite.id}/*/*"
+  source_arn = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.SeoWebsite.id}/*/*/"
 }
 
 /**
@@ -227,6 +234,31 @@ resource "aws_lambda_permission" "SeoWebsiteApiGatewayMethod" {
 resource "aws_api_gateway_account" "Seo" {
   cloudwatch_role_arn = "${aws_iam_role.SeoAPIGatewayAccount.arn}"
 }
+
+/**
+ * Domain
+ * ----------------------------------------------------------
+ */
+
+///**
+// * Custom domain name for the Website Endpoint.
+// */
+//resource "aws_api_gateway_domain_name" "SeoWebsite" {
+//  domain_name = "${var.seo_domain}"
+//  certificate_name = "${var.seo_domain}"
+//  certificate_body = "${file("./Certificates/${var.seo_domain}.crt")}"
+//  certificate_chain = "${file("./Certificates/${var.seo_domain}.chain.crt")}"
+//  certificate_private_key = "${file("./Certificates/${var.seo_domain}.key")}"
+//}
+//
+///**
+// * Custom domain base path mapping for the Website Endpoint.
+// */
+//resource "aws_api_gateway_base_path_mapping" "SeoWebsite" {
+//  api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
+//  stage_name = "${aws_api_gateway_deployment.SeoWebsite.stage_name}"
+//  domain_name = "${aws_api_gateway_domain_name.SeoWebsite.domain_name}"
+//}
 
 /**
  * Website
@@ -250,9 +282,9 @@ resource "aws_api_gateway_rest_api" "SeoWebsite" {
 resource "aws_api_gateway_deployment" "SeoWebsite" {
   depends_on = [
     "aws_api_gateway_method.SeoWebsite",
-    "aws_api_gateway_integration.SeoWebsite",
-    "aws_api_gateway_integration_response.SeoWebsite",
-    "aws_api_gateway_method_response.SeoWebsite"
+    "aws_api_gateway_integration.SeoWebsite"
+    //"aws_api_gateway_integration_response.SeoWebsite",
+    //"aws_api_gateway_method_response.SeoWebsite"
   ]
   rest_api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
   stage_name = "prod"
@@ -274,21 +306,27 @@ resource "aws_api_gateway_method" "SeoWebsite" {
 }
 
 /**
- * Website POST Integration Request. TODO: type = "AWS_PROXY"
+ * Website GET Integration Request.
  */
 resource "aws_api_gateway_integration" "SeoWebsite" {
+  depends_on = [
+    "aws_lambda_permission.SeoWebsiteApiGatewayMethod"
+  ]
   rest_api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
   resource_id = "${aws_api_gateway_rest_api.SeoWebsite.root_resource_id}"
   http_method = "${aws_api_gateway_method.SeoWebsite.http_method}"
   type = "AWS_PROXY"
   uri = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/${aws_lambda_function.SeoWebsite.arn}/invocations"
-  integration_http_method = "${aws_api_gateway_method.SeoWebsite.http_method}"
+  integration_http_method = "POST" // Lambda function do only accept POST
 }
 
 /**
- * Website POST Integration Response for status 200.
+ * Website GET Integration Response for status 200.
  */
 resource "aws_api_gateway_integration_response" "SeoWebsite" {
+  depends_on = [
+    "aws_api_gateway_integration.SeoWebsite"
+  ]
   rest_api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
   resource_id = "${aws_api_gateway_rest_api.SeoWebsite.root_resource_id}"
   http_method = "${aws_api_gateway_method.SeoWebsite.http_method}"
@@ -296,7 +334,7 @@ resource "aws_api_gateway_integration_response" "SeoWebsite" {
 }
 
 /**
- * Website POST Method Response for status 200.
+ * Website GET Method Response for status 200.
  */
 resource "aws_api_gateway_method_response" "SeoWebsite" {
   rest_api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
