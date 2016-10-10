@@ -43,19 +43,19 @@ resource "aws_route53_zone" "Seo" {
   delegation_set_id = "${aws_route53_delegation_set.Seo.id}"
 }
 
-///**
-// * Record routing to the APIGateway's CloudFront distribution for the Seo website.
-// */
-//resource "aws_route53_record" "SeoWebsite" {
-//  zone_id = "${aws_route53_zone.Seo.zone_id}"
-//  name = "${var.seo_domain}"
-//  type = "A"
-//  alias {
-//    name = "${aws_api_gateway_domain_name.SeoWebsite.cloudfront_domain_name}"
-//    zone_id = "${aws_api_gateway_domain_name.SeoWebsite.cloudfront_zone_id}"
-//    evaluate_target_health = false
-//  }
-//}
+/**
+ * Record routing to the APIGateway's CloudFront distribution for the Seo website.
+ */
+resource "aws_route53_record" "SeoWebsite" {
+  zone_id = "${aws_route53_zone.Seo.zone_id}"
+  name = "${var.seo_domain}"
+  type = "A"
+  alias {
+    name = "${aws_api_gateway_domain_name.SeoWebsite.cloudfront_domain_name}"
+    zone_id = "${aws_api_gateway_domain_name.SeoWebsite.cloudfront_zone_id}"
+    evaluate_target_health = false
+  }
+}
 
 /**
  * Record routing to the CloudFront distribution of the Seo resources website.
@@ -240,25 +240,25 @@ resource "aws_api_gateway_account" "Seo" {
  * ----------------------------------------------------------
  */
 
-///**
-// * Custom domain name for the Website Endpoint.
-// */
-//resource "aws_api_gateway_domain_name" "SeoWebsite" {
-//  domain_name = "${var.seo_domain}"
-//  certificate_name = "${var.seo_domain}"
-//  certificate_body = "${file("./Certificates/${var.seo_domain}.crt")}"
-//  certificate_chain = "${file("./Certificates/${var.seo_domain}.chain.crt")}"
-//  certificate_private_key = "${file("./Certificates/${var.seo_domain}.key")}"
-//}
-//
-///**
-// * Custom domain base path mapping for the Website Endpoint.
-// */
-//resource "aws_api_gateway_base_path_mapping" "SeoWebsite" {
-//  api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
-//  stage_name = "${aws_api_gateway_deployment.SeoWebsite.stage_name}"
-//  domain_name = "${aws_api_gateway_domain_name.SeoWebsite.domain_name}"
-//}
+/**
+ * Custom domain name for the Website Endpoint.
+ */
+resource "aws_api_gateway_domain_name" "SeoWebsite" {
+  domain_name = "${var.seo_domain}"
+  certificate_name = "${var.seo_domain}"
+  certificate_body = "${file("./Certificates/${var.seo_domain}.crt")}"
+  certificate_chain = "${file("./Certificates/${var.seo_domain}.chain.crt")}"
+  certificate_private_key = "${file("./Certificates/${var.seo_domain}.key")}"
+}
+
+/**
+ * Custom domain base path mapping for the Website Endpoint.
+ */
+resource "aws_api_gateway_base_path_mapping" "SeoWebsite" {
+  api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
+  stage_name = "${aws_api_gateway_deployment.SeoWebsite.stage_name}"
+  domain_name = "${aws_api_gateway_domain_name.SeoWebsite.domain_name}"
+}
 
 /**
  * Website
