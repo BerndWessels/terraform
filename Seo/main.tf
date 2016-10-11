@@ -36,6 +36,11 @@ resource "aws_route53_delegation_set" "Seo" {
 }
 
 /**
+ * Seo domain
+ * ----------------------------------------------------------
+ */
+
+/**
  * Hosted zone used for the Seo domain.
  */
 resource "aws_route53_zone" "Seo" {
@@ -58,10 +63,23 @@ resource "aws_route53_record" "SeoWebsite" {
 }
 
 /**
+ * Seo resources domain
+ * ----------------------------------------------------------
+ */
+
+/**
+ * Hosted zone used for the Seo domain.
+ */
+resource "aws_route53_zone" "SeoResources" {
+  name = "${var.seo_resources_domain}"
+  delegation_set_id = "${aws_route53_delegation_set.Seo.id}"
+}
+
+/**
  * Record routing to the CloudFront distribution of the Seo resources website.
  */
 resource "aws_route53_record" "SeoResourcesWebsite" {
-  zone_id = "${aws_route53_zone.Seo.zone_id}"
+  zone_id = "${aws_route53_zone.SeoResources.zone_id}"
   name = "${var.seo_resources_domain}"
   type = "A"
   alias {
@@ -77,7 +95,7 @@ resource "aws_route53_record" "SeoResourcesWebsite" {
  */
 
 /**
- * CloudFront distribution of the Seo website.
+ * CloudFront distribution of the Seo resources website.
  */
 resource "aws_cloudfront_distribution" "SeoResourcesWebsite" {
   aliases = [
@@ -258,6 +276,7 @@ resource "aws_api_gateway_base_path_mapping" "SeoWebsite" {
   api_id = "${aws_api_gateway_rest_api.SeoWebsite.id}"
   stage_name = "${aws_api_gateway_deployment.SeoWebsite.stage_name}"
   domain_name = "${aws_api_gateway_domain_name.SeoWebsite.domain_name}"
+  base_path = "(none)"
 }
 
 /**
